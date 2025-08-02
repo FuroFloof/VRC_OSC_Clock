@@ -1,0 +1,26 @@
+{
+  "name": "f_a_osc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+      "clean": "rimraf dist",
+      "pkg": "pkg . --targets latest-win-x64 --out-path dist",
+      "icon": "npx resedit-cli --in dist/f_a_osc.exe --out dist/f_a_osc.exe --set-icon assets/icon.ico",
+      "build": "npm run pkg && npm run icon"
+  },
+  "keywords": [],
+  "author": "FuroFloof",
+  "license": "ISC",
+  "description": "NodeJS Application that serves your current local time to your VRChat Avatar, using OSC. See README.txt and LICENSE.txt for more info.",
+  "dependencies": {
+    "node-windows": "^1.0.0-beta.8",
+    "osc": "^2.4.5"
+  },
+  "bin": {
+    "f_a_osc": "index.js"
+  },
+  "devDependencies": {
+    "rcedit": "^4.0.1",
+    "resedit-cli": "^2.1.0"
+  }
+}

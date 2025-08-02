@@ -1,0 +1,132 @@
+/*
+  ___                      _            _                  _                     ___    ___    ___ 
+ | __|  _  _   _ _   ___  ( )  ___     /_\   __ __  __ _  | |_   __ _   _ _     / _ \  / __|  / __|
+ | _|  | || | | '_| / _ \ |/  (_-<    / _ \  \ V / / _` | |  _| / _` | | '_|   | (_) | \__ \ | (__ 
+ |_|    \_,_| |_|   \___/     /__/   /_/ \_\  \_/  \__,_|  \__| \__,_| |_|      \___/  |___/  \___|
+
+
+
+  Hello curious individual! This is my lazily thrown together piece of software, that Sends your current time as floats thru AvatarOSC to your VRChat Avatar.
+  Here's my socials:
+
+  This Source code is shipped free of charge alongside your purchase of one of the following products:
+  - "Avatar Clock" by speedbuiz
+
+  YOUTUBE     : https://youtube.com/@furofloof
+  BLUESKY     : https://bluesky.social/profile/furofloof.com
+  GIT-HUB     : https://github.com/furofloof
+  FLOOFWORKS  : https://floof.works/@furofloof
+  DISCORD     : @furofloof
+
+  And my personal website: https://furofloof.com
+
+
+  If you're curious enough to read thru my dogwater code, i'd be happy to get feedback :D
+  here's my email if you want to send me silly stuff!
+
+  <furothelucario@gmail.com>
+
+  Please take a look at README.txt and LICENSE.txt for more information.
+*/
+
+const fs   = require("fs");   //for reading the config file
+const path = require("path"); //for resolving the config path
+const osc  = require("osc");  //required software package for communication with VRChat
+
+const isPkg     = typeof process.pkg !== "undefined"; //true inside the packaged exe
+//const baseDir   = isPkg ? path.dirname(process.execPath) : __dirname; //folder containing source .js during dev
+//const CONFIG_PATH = path.join(baseDir, "config.cfg"); //final path to the config file
+
+function getCliArg(name) {
+  const i = process.argv.indexOf(name);
+  return i !== -1 && process.argv[i + 1] ? process.argv[i + 1] : null;
+}
+
+const cliBase = getCliArg("--base"); //get the parameter that is our current path
+const baseDir = path.dirname(process.execPath); //are we currently running from the terminal or from the exe
+const CONFIG_PATH = path.join(baseDir,"Soft", "dev", "config.cfg");
+const LOG_PATH = path.join(baseDir,"Soft","dev","logs.txt");
+
+try{fs.mkdirSync(path.dirname(LOG_PATH),{recursive:true});}catch{}
+let logStream;
+try{logStream=fs.createWriteStream(LOG_PATH,{flags:"w"});}catch{}
+
+function timestamp(){
+  const d=new Date();
+  return `[${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}@${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}]`;
+}
+
+["log","info","warn","error"].forEach(fn=>{
+  const orig=console[fn].bind(console);
+  console[fn]=(...args)=>{
+    orig(...args);
+    if(logStream){
+      const msg=args.map(a=>typeof a==="string"?a:JSON.stringify(a)).join(" ");
+      logStream.write(`${timestamp()} : ${msg}\n`);
+    }
+  };
+});
+
+process.on("exit",()=>{if(logStream)logStream.end();});
+
+function loadConfig() { //json reading, my favorite!
+  let raw;
+  try {
+    raw = fs.readFileSync(CONFIG_PATH, "utf8");
+  } catch (err) {
+    console.error(`Cannot read config at ${CONFIG_PATH}: ${err.message}`);
+    process.exit(1);
+  }
+
+  let cfg;
+  try {
+    cfg = JSON.parse(raw);
+  } catch (err) {
+    console.error(`Config is not valid JSON: ${err.message}`);
+    process.exit(1);
+  }
+
+  return cfg;
+}
+
+const cfg = loadConfig();
+
+const PORT = Number.isInteger(cfg.OSCPort) ? cfg.OSCPort : (() => { //read data from config, and if it's fake as fuck, throw an error!
+  console.error(`Invalid or missing \"OSCPort\" in config (got '${cfg.OSCPort}').`);
+  process.exit(1);
+})();
+
+if (PORT < 1 || PORT > 65535) { //is the port based or cringe?
+  console.error(`Error: port '${PORT}' out of range (1-65535).`);
+  process.exit(1); //port is cringe, get outta herrre!
+}
+
+const VRCHAT_IP  = cfg.IP && typeof cfg.IP === "string" && cfg.IP.trim() ? cfg.IP : "127.0.0.1"; //is the ip based or cringe, if it's based, leave it be, otherwise, set it to based localhost
+const PUSH_EVERY = Number.isInteger(cfg.TIME_BETWEEN_UPDATES) && cfg.TIME_BETWEEN_UPDATES > 0 ? cfg.TIME_BETWEEN_UPDATES : 1000; //if config doesn't provide, just push every 1 second
+
+const udpPort = new osc.UDPPort({ //configure udp traffic
+  localAddress: "0.0.0.0",
+  localPort:    0,
+  remoteAddress: VRCHAT_IP,
+  remotePort:    PORT,
+  metadata:      true,
+});
+
+udpPort.open(); //can i has port? :3
+
+udpPort.on("ready", () => { //epic! we got osc port!
+  console.log(`Running OSC @ ${VRCHAT_IP}:${PORT}`);
+  sendTime(); //push data once
+  setInterval(sendTime, PUSH_EVERY); //push every interval you set in the config.
+});
+
+function sendTime() {
+  const now = new Date();
+  const msgs = [
+    { address: "/avatar/parameters/FW_P_Hours",   args: [{ type: "f", value: now.getHours()   / 24 }] }, //divide by 24 because there's only 24 hours in a day
+    { address: "/avatar/parameters/FW_P_Minutes", args: [{ type: "f", value: now.getMinutes() / 60 }] }, //divide by 60 because there's only 60 minutes in an hour  
+    { address: "/avatar/parameters/FW_P_Seconds", args: [{ type: "f", value: now.getSeconds() / 60 }] }, //divide by 60 because there's only 60 seconds in a minute
+  ];
+
+  msgs.forEach((m) => udpPort.send(m)); //give it to vrchat (or me if you want to ;3)
+}

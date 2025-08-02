@@ -1,0 +1,31 @@
+F_A_OSC – Personal-Use License
+Copyright (c) 2025 furofloof <furothelucario@gmail.com>
+All rights reserved.
+
+Permission is hereby granted to the original purchaser (“Licensee”) to install
+and use one (1) copy of this software and its associated assets (collectively,
+“Furo's Avatar OSC”) on devices personally owned or controlled by the Licensee for
+non-commercial purposes only.
+
+THE LICENSEE MAY NOT, UNDER ANY CIRCUMSTANCE:
+
+1. Redistribute, re-upload, publish, sublicense, lend, rent, lease, or sell any
+   part of this software, modified or unmodified, in any medium or format.
+2. Include this software or derivatives thereof in any product, package,
+   repository, or archive intended for distribution.
+3. Reverse-engineer, decompile, or disassemble the binary versions of
+   this software except as expressly permitted by applicable law.
+4. Remove, obscure, or alter any copyright, trademark, or attribution notice.
+
+Title, ownership, and all intellectual-property rights in this software remain
+with the author.
+
+THIS SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+By installing or using this software you acknowledge that you have read,
+understood, and agree to be bound by the terms above.
